@@ -15,7 +15,7 @@ namespace PSPagerTests
 
 
         [Fact]
-        public void CanExit()
+        public void Pressing_Q_CanExit()
         {
             TestConsole console = new TestConsole();
             console.BufferHeight = 50;
