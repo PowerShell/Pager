@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
+[assembly:System.Runtime.CompilerServices.InternalsVisibleTo(assemblyName: "test")]
 namespace Microsoft.PowerShell
 {
     public class Pager
@@ -14,35 +15,23 @@ namespace Microsoft.PowerShell
 
         private static readonly string pagerMessage = $"{reverseColorStart}Up:{reverseColorEnd}↑ {reverseColorStart}Down:{reverseColorEnd}↓ {reverseColorStart}Quit:{reverseColorEnd}Q :";
 
-        #if DEBUG
-        private static PagerState state;
-
-        private static ConsoleKeyInfo UserInputKey = new ConsoleKeyInfo('ü', ConsoleKey.NoName, shift: false, alt: false, control: false);
-
-        private static int BufferHeight = 0;
-
-        private static int WindowHeight = 0;
-        #endif
+        private static IConsole defaultConsole;
 
         static Pager()
         {
-            #if DEBUG
-            state = new PagerState();
-            #endif
+            defaultConsole = new SystemConsole();
         }
 
-        public static void Write(string content, string scrollToRegexPattern, bool useAlternateScreenBuffer = true)
+        internal Pager(IConsole testConsole)
+        {
+            defaultConsole = testConsole;
+        }
+
+        public void Write(string content, string scrollToRegexPattern, bool useAlternateScreenBuffer = true)
         {
             string[] contentAsArray = content.Split(new string[] {Environment.NewLine}, StringSplitOptions.None);
-
             int startLine = 0;
-
-            # if DEBUG
-            int bufferHeight = Math.Min(WindowHeight,BufferHeight);
-            #else
-            int bufferHeight = Math.Min(Console.WindowHeight,Console.BufferHeight);
-            #endif
-
+            int bufferHeight = Math.Min(defaultConsole.WindowHeight, defaultConsole.BufferHeight);
             bool moved = true;
 
             if (!String.IsNullOrEmpty(scrollToRegexPattern))
@@ -56,35 +45,22 @@ namespace Microsoft.PowerShell
                 }
             }
 
-            Console.Write(startAltBuffer);
+            defaultConsole.Write(startAltBuffer);
 
             do
             {
                 if (moved) {
 
-                    #if !DEBUG
-                    Console.Clear();
-                    #endif
+                    defaultConsole.Clear();
 
-                    int offset = GetMultilineOffset(contentAsArray, startLine);
+                    int offset = GetMultilineOffset(contentAsArray, startLine, bufferHeight);
                     string displayContent = String.Join(Environment.NewLine, contentAsArray.Skip(startLine).Take(bufferHeight - offset));
 
-                    #if DEBUG
-                    state.ConsoleBufferOutput = displayContent;
-                    state.Moved = moved;
-                    state.MultilineOffset = offset;
-                    state.StartLine = startLine;
-                    #else
-                    Console.WriteLine(displayContent);
-                    Console.Write(pagerMessage);
-                    #endif
+                    defaultConsole.WriteLine(displayContent);
+                    defaultConsole.Write(pagerMessage);
                 }
 
-                #if DEBUG
-                ConsoleKeyInfo pressed = UserInputKey;
-                #else
-                ConsoleKeyInfo pressed = Console.ReadKey(intercept: true);
-                #endif
+                ConsoleKeyInfo pressed = defaultConsole.ReadKey(intercept: true);
 
                 if (pressed.Key == ConsoleKey.UpArrow) {
                     if (startLine > 0) {
@@ -107,17 +83,11 @@ namespace Microsoft.PowerShell
 
             } while (true);
 
-            Console.Write(endAltBuffer);
+            defaultConsole.Write(endAltBuffer);
         }
 
-        private static int GetMultilineOffset(string[] contentAsArray, int startLine)
+        private int GetMultilineOffset(string[] contentAsArray, int startLine, int bufferHeight)
         {
-            # if DEBUG
-            int bufferHeight = Math.Min(WindowHeight,BufferHeight);
-            #else
-            int bufferHeight = Math.Min(Console.WindowHeight,Console.BufferHeight);
-            #endif
-
             int contentTotalLines = contentAsArray.Count();
 
             if (contentTotalLines <= 1)
@@ -126,7 +96,7 @@ namespace Microsoft.PowerShell
             }
 
             int endLine = startLine + bufferHeight;
-            int bufferWidth = Console.BufferWidth;
+            int bufferWidth = defaultConsole.BufferWidth;
 
             int offset = 0;
 
@@ -141,37 +111,5 @@ namespace Microsoft.PowerShell
 
             return offset;
         }
-
-        #if DEBUG
-
-        public static void SetTestHook(string property, object value)
-        {
-            var fieldInfo = typeof(Pager).GetField(property, BindingFlags.Static | BindingFlags.NonPublic);
-            if (fieldInfo != null)
-            {
-                fieldInfo.SetValue(null, value);
-            }
-        }
-
-        public static object GetTestHook(string property)
-        {
-            var fieldInfo = typeof(Pager).GetField(property, BindingFlags.Static | BindingFlags.NonPublic);
-            return fieldInfo?.GetValue(null);
-        }
-
-        public static void ResetPagerState()
-        {
-            state = new PagerState();
-        }
-
-        #endif
-    }
-
-    public class PagerState
-    {
-        public bool Moved { get; set; }
-        public int StartLine { get; set; }
-        public int MultilineOffset { get; set; }
-        public string ConsoleBufferOutput { get; set; }
     }
 }
