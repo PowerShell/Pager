@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Microsoft.PowerShell
@@ -11,7 +12,7 @@ namespace Microsoft.PowerShell
         public int BufferWidth
         { get; set; }
 
-        public ConsoleKeyInfo PressedKey
+        public List<ConsoleKeyInfo> PressedKey
         { get; set; }
 
         public int WindowHeight
@@ -22,6 +23,8 @@ namespace Microsoft.PowerShell
 
         private StringWriter consoleContent = new StringWriter();
 
+        private static int currentKeyIndex = 0;
+
         public void Clear()
         {
             consoleContent = new StringWriter();
@@ -29,7 +32,12 @@ namespace Microsoft.PowerShell
 
         public ConsoleKeyInfo ReadKey(bool intercept)
         {
-            return PressedKey;
+            if(currentKeyIndex < PressedKey.Count)
+            {
+                return PressedKey[currentKeyIndex++];
+            }
+
+            throw new IndexOutOfRangeException("No more keys to read");
         }
 
         public override string ToString()

@@ -1,5 +1,5 @@
 using System;
-using System.IO;
+using System.Collections.Generic;
 using Microsoft.PowerShell;
 using Xunit;
 
@@ -23,11 +23,43 @@ namespace PSPagerTests
             console.WindowHeight = 50;
             console.BufferWidth = 120;
             console.WindowWidth = 120;
-            console.PressedKey = new ConsoleKeyInfo('Q', ConsoleKey.Q, shift: false, alt: false, control: false);
+
+            List<ConsoleKeyInfo> pressedKeys = new List<ConsoleKeyInfo>
+            {
+                new ConsoleKeyInfo('Q', ConsoleKey.Q, shift: false, alt: false, control: false)
+            };
+
+            console.PressedKey = pressedKeys;
+
             Pager p = new Pager(console);
 
             p.Write("HelloWorld", scrollToRegexPattern: null, useAlternateScreenBuffer: false);
             string expected = $"HelloWorld{Environment.NewLine}{pagerMessage}{endAltBuffer}";
+            Assert.Equal(expected, console.ToString());
+        }
+
+        [Fact]
+        public void Pressing_Down_Shows_Second_Line()
+        {
+            TestConsole console = new TestConsole();
+            console.BufferHeight = 3;
+            console.WindowHeight = 3;
+            console.BufferWidth = 120;
+            console.WindowWidth = 120;
+
+            List<ConsoleKeyInfo> pressedKeys = new List<ConsoleKeyInfo>
+            {
+                new ConsoleKeyInfo(char.MaxValue, ConsoleKey.DownArrow, shift: false, alt: false, control: false),
+                new ConsoleKeyInfo('Q', ConsoleKey.Q, shift: false, alt: false, control: false)
+            };
+
+            console.PressedKey = pressedKeys;
+            Pager p = new Pager(console);
+
+            string testString = "1" + Environment.NewLine + "2" + Environment.NewLine + "3";
+
+            p.Write(testString, scrollToRegexPattern: null, useAlternateScreenBuffer: false);
+            string expected = $"2{Environment.NewLine}3{Environment.NewLine}{pagerMessage}{endAltBuffer}";
             Assert.Equal(expected, console.ToString());
         }
     }

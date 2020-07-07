@@ -53,8 +53,8 @@ namespace Microsoft.PowerShell
 
                     defaultConsole.Clear();
 
-                    int offset = GetMultilineOffset(contentAsArray, startLine, bufferHeight);
-                    string displayContent = String.Join(Environment.NewLine, contentAsArray.Skip(startLine).Take(bufferHeight - offset));
+                    int offset = GetMultilineOffset(contentAsArray, startLine);//, bufferHeight);
+                    string displayContent = String.Join(Environment.NewLine, contentAsArray.Skip(startLine).Take(bufferHeight - offset - 1));
 
                     defaultConsole.WriteLine(displayContent);
                     defaultConsole.Write(pagerMessage);
@@ -69,7 +69,7 @@ namespace Microsoft.PowerShell
                     }
                 }
                 else if (pressed.Key == ConsoleKey.DownArrow) {
-                    if ((startLine + bufferHeight) < contentAsArray.Count()) {
+                    if ((bufferHeight - 1) < contentAsArray.Count()) {
                         startLine++;
                         moved = true;
                     }
@@ -86,7 +86,7 @@ namespace Microsoft.PowerShell
             defaultConsole.Write(endAltBuffer);
         }
 
-        private int GetMultilineOffset(string[] contentAsArray, int startLine, int bufferHeight)
+        private int GetMultilineOffset(string[] contentAsArray, int startLine)//, int bufferHeight)
         {
             int contentTotalLines = contentAsArray.Count();
 
@@ -95,12 +95,12 @@ namespace Microsoft.PowerShell
                 return contentTotalLines;
             }
 
-            int endLine = startLine + bufferHeight;
+            //int endLine = startLine + bufferHeight;
             int bufferWidth = defaultConsole.BufferWidth;
 
             int offset = 0;
 
-            for(int i = startLine; i < endLine; i++)
+            for(int i = startLine; i < contentTotalLines; i++)
             {
                 int lineLength = contentAsArray[i].Length;
                 if (lineLength > bufferWidth)
