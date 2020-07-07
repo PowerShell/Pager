@@ -3,7 +3,7 @@ using System.IO;
 
 namespace Microsoft.PowerShell
 {
-public class TestConsole : IConsole
+    public class TestConsole : IConsole
     {
         public int BufferHeight
         { get; set; }
