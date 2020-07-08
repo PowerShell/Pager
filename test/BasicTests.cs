@@ -43,7 +43,7 @@ namespace PSPagerTests
             console.PressedKey = pressedKeys;
 
             Pager p = new Pager(console);
-            p.Write("HelloWorld", scrollToRegexPattern: null, useAlternateScreenBuffer: false);
+            p.Write("HelloWorld");
             var pad = GetPadding(8);
             string expected = $"HelloWorld{Environment.NewLine}{string.Join(Environment.NewLine, pad)}{pagerMessage}{endAltBuffer}";
 
@@ -69,7 +69,7 @@ namespace PSPagerTests
 
             Pager p = new Pager(console);
             string testString = "1" + Environment.NewLine + "2" + Environment.NewLine + "3";
-            p.Write(testString, scrollToRegexPattern: null, useAlternateScreenBuffer: false);
+            p.Write(testString);
             string expected = $"2{Environment.NewLine}3{Environment.NewLine}{pagerMessage}{endAltBuffer}";
             Assert.Equal(expected, console.ToString());
         }
@@ -95,7 +95,7 @@ namespace PSPagerTests
 
             var pad = GetPadding(116);
 
-            p.Write(testString, scrollToRegexPattern: null, useAlternateScreenBuffer: false);
+            p.Write(testString);
             string expected = $"1{Environment.NewLine}2{Environment.NewLine}3{Environment.NewLine}{string.Join(Environment.NewLine, pad)}{pagerMessage}{endAltBuffer}";
             Assert.Equal(expected, console.ToString());
         }

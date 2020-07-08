@@ -27,7 +27,7 @@ namespace Microsoft.PowerShell
             defaultConsole = testConsole;
         }
 
-        public void Write(string content, string scrollToRegexPattern, bool useAlternateScreenBuffer = true)
+        public void Write(string content, string scrollToRegexPattern = null)
         {
             string[] contentAsArray = content.Split(new string[] {Environment.NewLine}, StringSplitOptions.None);
             int startLine = 0;
