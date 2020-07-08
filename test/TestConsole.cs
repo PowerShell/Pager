@@ -23,7 +23,7 @@ namespace Microsoft.PowerShell
 
         private StringWriter consoleContent = new StringWriter();
 
-        private static int currentKeyIndex = 0;
+        private int currentKeyIndex = 0;
 
         public void Clear()
         {

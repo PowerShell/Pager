@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 [assembly:System.Runtime.CompilerServices.InternalsVisibleTo(assemblyName: "test")]
 namespace Microsoft.PowerShell
@@ -8,7 +8,7 @@ namespace Microsoft.PowerShell
     public class Pager
     {
         private static readonly char vt100Escape = (char) 0x1b;
-        private static readonly string startAltBuffer = $"{vt100Escape}[?1049h]";
+        private static readonly string startAltBuffer = $"{vt100Escape}[?1049h";
         private static readonly string endAltBuffer = $"{vt100Escape}[?1049l";
         private static readonly string reverseColorStart = $"{vt100Escape}[7m";
         private static readonly string reverseColorEnd = $"{vt100Escape}[0m";
@@ -17,7 +17,7 @@ namespace Microsoft.PowerShell
 
         private static IConsole defaultConsole;
 
-        static Pager()
+        public Pager()
         {
             defaultConsole = new SystemConsole();
         }
@@ -53,10 +53,25 @@ namespace Microsoft.PowerShell
 
                     defaultConsole.Clear();
 
-                    int offset = GetMultilineOffset(contentAsArray, startLine);//, bufferHeight);
-                    string displayContent = String.Join(Environment.NewLine, contentAsArray.Skip(startLine).Take(bufferHeight - offset - 1));
+                    int offset = GetMultilineOffset(contentAsArray, startLine, bufferHeight);
 
-                    defaultConsole.WriteLine(displayContent);
+                    var selectedContent = contentAsArray.Skip(startLine).Take(bufferHeight - offset - 1);
+
+                    // add padding so the pager message is always the last line.
+                    int paddingLines = bufferHeight - (selectedContent.Count() + offset + 1);
+
+                    List<string> pad = new List<string>();
+
+                    for (int i = 0; i <= paddingLines; i++)
+                    {
+                        pad.Add(string.Empty);
+                    }
+
+                    string[] toDisplay = selectedContent.Concat(pad).ToArray();
+
+                    string displayContent = String.Join(Environment.NewLine, toDisplay);
+
+                    defaultConsole.Write(displayContent);
                     defaultConsole.Write(pagerMessage);
                 }
 
@@ -86,26 +101,21 @@ namespace Microsoft.PowerShell
             defaultConsole.Write(endAltBuffer);
         }
 
-        private int GetMultilineOffset(string[] contentAsArray, int startLine)//, int bufferHeight)
+        private int GetMultilineOffset(string[] contentAsArray, int startLine, int bufferHeight)
         {
             int contentTotalLines = contentAsArray.Count();
-
-            if (contentTotalLines <= 1)
-            {
-                return contentTotalLines;
-            }
-
-            //int endLine = startLine + bufferHeight;
+            int endLine = Math.Min(startLine + bufferHeight, contentTotalLines - 1);
             int bufferWidth = defaultConsole.BufferWidth;
 
             int offset = 0;
 
-            for(int i = startLine; i < contentTotalLines; i++)
+            for(int i = startLine; i <= endLine; i++)
             {
                 int lineLength = contentAsArray[i].Length;
                 if (lineLength > bufferWidth)
                 {
-                    offset += lineLength / bufferWidth;
+                    double val = Math.Ceiling((double) (lineLength / bufferWidth));
+                    offset += Convert.ToInt32(val);
                 }
             }
 
