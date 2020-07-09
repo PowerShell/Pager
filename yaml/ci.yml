@@ -50,8 +50,4 @@ stages:
   pool:
     vmImage: windows-latest
   jobs:
-  - job: run_compliance
-    displayName: Run compliance
-    steps:
-    - download: current
-    - template: template/credscan.yml
+  - template: template/credscan.yml
