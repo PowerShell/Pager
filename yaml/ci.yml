@@ -1,0 +1,49 @@
+name: PR-$(System.PullRequest.PullRequestNumber)-$(Date:yyyyMMdd)$(Rev:.rr)
+trigger:
+  # Batch merge builds together while a merge build is running
+  batch: true
+  branches:
+    include:
+    - master
+    - release*
+pr:
+  branches:
+    include:
+    - master
+    - release*
+
+resources:
+  - repo: self
+    clean: true
+
+stages:
+- stage: build_and_tet
+  poolName:
+    vmImage: windows-latest
+  displayName: Build Microsoft.PowerShell.Pager
+  jobs:
+  - job: Build
+    displayName: Build
+    steps:
+    - pwsh: |
+        ./build.ps1 -Clean -Configuration 'Release'
+      displayName: Build
+    - publish: "out/"
+      artifact: out
+
+- stage: Test
+  displayName: Test Microsoft.PowerShell.Pager
+  jobs:
+  - download: current
+  - task: DotNetCoreCLI@2:
+    inputs:
+      command: test
+      nobuild: true
+
+- stage: Compliance
+  displayName: Compliance
+  jobs:
+  - download: current
+  - template: template/credscan.yml
+
+

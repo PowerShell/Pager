@@ -1,8 +1,16 @@
 [CmdletBinding()]
 param (
     [Parameter()]
+    [string]
+    $Configuration = "Debug",
+
+    [Parameter()]
     [switch]
-    $Clean
+    $Clean,
+
+    [Parameter()]
+    [switch]
+    $Test
 )
 
 try {
@@ -19,7 +27,8 @@ try {
         dotnet clean
     }
 
-    dotnet build --output "$PSScriptRoot/out"
+    dotnet build --output "$PSScriptRoot/out" --configuration $Configuration
+
 }
 finally {
     Pop-Location
