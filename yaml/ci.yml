@@ -33,15 +33,25 @@ stages:
 
 - stage: Test
   displayName: Test Microsoft.PowerShell.Pager
+  pool:
+    vmImage: windows-latest
   jobs:
-  - download: current
-  - task: DotNetCoreCLI@2:
-    inputs:
-      command: test
-      nobuild: true
+  - job: run_test
+    displayName: Run test
+    steps:
+    - download: current
+    - task: DotNetCoreCLI@2:
+      inputs:
+        command: test
+        nobuild: true
 
 - stage: Compliance
-  displayName: Compliance
+  displayName: Compliance Microsoft.PowerShell.Pager
+  pool:
+    vmImage: windows-latest
   jobs:
-  - download: current
-  - template: template/credscan.yml
+  - job: run_compliance
+    displayName: Run compliance
+    steps:
+    - download: current
+    - template: template/credscan.yml
