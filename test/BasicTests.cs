@@ -99,5 +99,28 @@ namespace PSPagerTests
             string expected = $"1{Environment.NewLine}2{Environment.NewLine}3{Environment.NewLine}{string.Join(Environment.NewLine, pad)}{pagerMessage}{endAltBuffer}";
             Assert.Equal(expected, console.ToString());
         }
+
+        [Fact]
+        public void Scrolling_To_Line()
+        {
+            TestConsole console = new TestConsole();
+            console.BufferHeight = 3;
+            console.WindowHeight = 3;
+            console.BufferWidth = 120;
+            console.WindowWidth = 120;
+
+            List<ConsoleKeyInfo> pressedKeys = new List<ConsoleKeyInfo>
+            {
+                new ConsoleKeyInfo('Q', ConsoleKey.Q, shift: false, alt: false, control: false)
+            };
+
+            console.PressedKey = pressedKeys;
+
+            Pager p = new Pager(console);
+            string testString = $"1{Environment.NewLine}2{Environment.NewLine}3";
+            p.Write(testString, "3");
+            string expected = $"3{Environment.NewLine}{Environment.NewLine}{pagerMessage}{endAltBuffer}";
+            Assert.Equal(expected, console.ToString());
+        }
     }
 }
