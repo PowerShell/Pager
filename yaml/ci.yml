@@ -40,7 +40,7 @@ stages:
     displayName: Run test
     steps:
     - download: current
-    - task: DotNetCoreCLI@2:
+    - task: DotNetCoreCLI@2
       inputs:
         command: test
         nobuild: true
