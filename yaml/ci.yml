@@ -18,7 +18,7 @@ resources:
 
 stages:
 - stage: build_and_tet
-  poolName:
+  pool:
     vmImage: windows-latest
   displayName: Build Microsoft.PowerShell.Pager
   jobs:
@@ -45,5 +45,3 @@ stages:
   jobs:
   - download: current
   - template: template/credscan.yml
-
-
