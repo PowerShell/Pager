@@ -1,0 +1,34 @@
+parameters:
+  vmImageName: 'windows-latest'
+  jobName: 'run_test_windows'
+  jobDisplayName: 'Run test'
+
+jobs:
+  - job: '${{ parameters.jobName }}_net461'
+    pool:
+      vmImage: ${{ parameters.vmImageName }}
+    displayName: ${{ parameters.jobDisplayName }} - net461
+    condition: startsWith('${{ parameters.vmImageName }}', 'win')
+    steps:
+    - download: current
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: test
+        projects: test/test.csproj
+        nobuild: true
+        arguments: --runtime net461
+        testRunTitle: Tests on Windows - net461
+
+  - job: '${{ parameters.jobName }}_netcoreapp3.1'
+    pool:
+        vmImage: ${{ parameters.vmImageName }}
+    displayName: ${{ parameters.jobDisplayName }} - netcoreapp3.1
+    steps:
+    - download: current
+    - task: DotNetCoreCLI@2
+        inputs:
+        command: test
+        projects: test/test.csproj
+        nobuild: true
+        arguments: --runtime netcoreapp3.1
+        testRunTitle: Tests on Windows - netcoreapp3.1
