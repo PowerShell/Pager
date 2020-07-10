@@ -1,10 +1,16 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
 [assembly:System.Runtime.CompilerServices.InternalsVisibleTo(assemblyName: "test")]
 namespace Microsoft.PowerShell
 {
+    /// <summary>
+    ///  This class implements the Pager by writting content to the alternate screen buffer.
+    /// </summary>
     public class Pager
     {
         private static readonly char vt100Escape = (char) 0x1b;
@@ -17,16 +23,27 @@ namespace Microsoft.PowerShell
 
         private static IConsole defaultConsole;
 
+        /// <summary>
+        /// Initialzes the default console to write the input string to.
+        /// </summary>
         public Pager()
         {
             defaultConsole = new SystemConsole();
         }
 
+        /// <summary>
+        /// Override the default console with an implementation of IConsole.
+        /// </summary>
         internal Pager(IConsole testConsole)
         {
             defaultConsole = testConsole;
         }
 
+        /// <summary>
+        /// Write input to alternate screen buffer and display pager prompt on the last line.
+        /// </summary>
+        /// <param name="content">Content to display on alternate screen buffer.</param>
+        /// <param name="scrollToRegexPattern">Regular expression pattern to scroll to.null</param>
         public void Write(string content, string scrollToRegexPattern = null)
         {
             string[] contentAsArray = content.Split(new string[] {Environment.NewLine}, StringSplitOptions.None);
@@ -101,6 +118,12 @@ namespace Microsoft.PowerShell
             defaultConsole.Write(endAltBuffer);
         }
 
+        /// <summary>
+        /// Get the offset for the numbers of lines when the content line is longer than buffer width.
+        /// </summary>
+        /// <param name="contentAsArray">Content to parse to be larger than buffer width.</param>
+        /// <param name="startLine">Line in the input array to be consider as starting point for parsing"</param>
+        /// <param name="bufferHeight">Height of the buffer</param>
         private int GetMultilineOffset(string[] contentAsArray, int startLine, int bufferHeight)
         {
             int contentTotalLines = contentAsArray.Count();

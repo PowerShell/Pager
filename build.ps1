@@ -1,3 +1,6 @@
+## Copyright (c) Microsoft Corporation.
+## Licensed under the MIT License.
+
 [CmdletBinding()]
 param (
     [Parameter()]
@@ -6,11 +9,7 @@ param (
 
     [Parameter()]
     [switch]
-    $Clean,
-
-    [Parameter()]
-    [switch]
-    $Test
+    $Clean
 )
 
 try {
