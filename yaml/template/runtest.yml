@@ -32,5 +32,5 @@ jobs:
         command: test
         projects: test/test.csproj
         nobuild: true
-        arguments: --runtime netcoreapp3.1 --collect:"Code Coverage"
+        arguments: --runtime netcoreapp3.1
         testRunTitle: Tests on ${{parameters.vmImageName}}
