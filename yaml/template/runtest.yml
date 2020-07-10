@@ -12,6 +12,7 @@ jobs:
     steps:
     - download: current
     - task: DotNetCoreCLI@2
+      displayName: Tests on Windows - net461
       inputs:
         command: test
         projects: test/test.csproj
@@ -26,9 +27,10 @@ jobs:
     steps:
     - download: current
     - task: DotNetCoreCLI@2
-        inputs:
+      displayName: Tests on ${{parameters.vmImageName}} - netcoreapp3.1
+      inputs:
         command: test
         projects: test/test.csproj
         nobuild: true
         arguments: --runtime netcoreapp3.1
-        testRunTitle: Tests on Windows - netcoreapp3.1
+        testRunTitle: Tests on ${{parameters.vmImageName}}
