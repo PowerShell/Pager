@@ -20,7 +20,7 @@ jobs:
         arguments: --runtime net461
         testRunTitle: Tests on Windows - net461
 
-  - job: '${{ parameters.jobName }}_netcoreapp3.1'
+  - job: '${{ parameters.jobName }}_netcoreapp31'
     pool:
         vmImage: ${{ parameters.vmImageName }}
     displayName: ${{ parameters.jobDisplayName }} - netcoreapp3.1
