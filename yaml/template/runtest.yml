@@ -19,6 +19,10 @@ jobs:
         nobuild: true
         arguments: --runtime net461 --collect:"XPlat Code Coverage"
         testRunTitle: Tests on Windows - net461
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: cobertura
+        summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
 
   - job: '${{ parameters.jobName }}_netcoreapp31'
     pool:
@@ -34,3 +38,7 @@ jobs:
         nobuild: true
         arguments: --runtime netcoreapp3.1 --collect:"XPlat Code Coverage"
         testRunTitle: Tests on ${{parameters.vmImageName}}
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: cobertura
+        summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
