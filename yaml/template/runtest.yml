@@ -17,7 +17,7 @@ jobs:
         command: test
         projects: test/test.csproj
         nobuild: true
-        arguments: --runtime net461
+        arguments: --runtime net461 --collect:"Code Coverage"
         testRunTitle: Tests on Windows - net461
 
   - job: '${{ parameters.jobName }}_netcoreapp31'
@@ -32,5 +32,5 @@ jobs:
         command: test
         projects: test/test.csproj
         nobuild: true
-        arguments: --runtime netcoreapp3.1
+        arguments: --runtime netcoreapp3.1 --collect:"Code Coverage"
         testRunTitle: Tests on ${{parameters.vmImageName}}
