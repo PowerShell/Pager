@@ -33,18 +33,24 @@ stages:
 
 - stage: Test
   displayName: Test Microsoft.PowerShell.Pager
-  pool:
-    vmImage: windows-latest
   jobs:
-  - job: run_test
-    displayName: Run test
-    steps:
-    - download: current
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: test
-        projects: test/test.csproj
-        nobuild: true
+  - template: template/runtest.yml
+    parameters:
+      vmImageName: windows-latest
+      jobName: run_test_windows
+      jobDisplayName: Run tests Windows
+
+  - template: template/runtest.yml
+    parameters:
+      vmImageName: ubuntu-latest
+      jobName: run_test_ubuntu
+      jobDisplayName: Run tests Ubuntu
+
+  - template: template/runtest.yml
+    parameters:
+      vmImageName: macos-latest
+      jobName: run_test_macos
+      jobDisplayName: Run tests macOS
 
 - stage: Compliance
   displayName: Compliance Microsoft.PowerShell.Pager
