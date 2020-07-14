@@ -1,0 +1,68 @@
+steps:
+- download: current
+
+- pwsh: |
+    $vstsCommandString = "vso[task.setvariable variable=BUILD_SOURCE]$(Pipeline.Workspace)"
+    Write-Host "sending " + $vstsCommandString
+    Write-Host "##$vstsCommandString"
+  displayName: Extract product artifact
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
+  displayName: 'Run Defender Scan'
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
+  displayName: 'Run CredScan'
+  inputs:
+    toolMajorVersion: V2
+    debugMode: false
+    continueOnError: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-binskim.BinSkim@3
+  displayName: 'Run BinSkim '
+  inputs:
+    InputType: Basic
+    AnalyzeTarget: '$(BUILD_SOURCE)\signed\Microsoft.PowerShell.Pager.dll'
+    AnalyzeSymPath: 'SRV*'
+    AnalyzeVerbose: true
+    AnalyzeHashes: true
+    AnalyzeStatistics: true
+    continueOnError: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-policheck.PoliCheck@1
+  displayName: 'Run PoliCheck'
+  inputs:
+    targetType: F
+    optionsFC: 0
+    optionsXS: 0
+    optionsPE: '1|2|3|4'
+    optionsHMENABLE: 0
+    toolVersion: 5.8.2.1
+    continueOnError: true
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: 'Publish Security Analysis Logs to Build Artifacts'
+  continueOnError: true
+
+#- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+#  displayName: 'TSA upload to Codebase: PSThreadJob_201912 Stamp: Azure'
+#  inputs:
+#    tsaStamp: Azure
+#    codeBaseName: PSThreadJob_202004
+#    tsaVersion: TsaV2
+#    uploadFortifySCA: false
+#    uploadFxCop: false
+#    uploadModernCop: false
+#    uploadPREfast: false
+#    uploadRoslyn: false
+#    uploadTSLint: false
+#    uploadAPIScan: false
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
+  displayName: 'Create Security Analysis Report'
+  inputs:
+    TsvFile: false
+    APIScan: false
+    BinSkim: true
+    CredScan: true
+    PoliCheck: true
+    PoliCheckBreakOn: Severity2Above
