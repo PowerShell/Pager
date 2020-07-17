@@ -25,22 +25,22 @@ stages:
   pool:
     vmImage: windows-latest
   jobs:
-  - task: PkgESSetupBuild@10
-    displayName: 'Initialize build'
-    env:
-      SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-    inputs:
-      useDfs: false
-      productName: PowerShellCore
-      branchVersion: true
-      disableWorkspace: true
-      disableBuildTools: true
-      disableNugetPack: true
-    condition: and(succeeded(), ne(variables['SkipSigning'], 'true'))
-
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.Pager
     steps:
+    - task: PkgESSetupBuild@10
+      displayName: 'Initialize build'
+      env:
+        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+      inputs:
+        useDfs: false
+        productName: PowerShellCore
+        branchVersion: true
+        disableWorkspace: true
+        disableBuildTools: true
+        disableNugetPack: true
+      condition: and(succeeded(), ne(variables['SkipSigning'], 'true'))
+
     - pwsh: |
         $versionString = if ($env:RELEASE_VERSION -eq 'fromBranch') {
           $branch = $env:BUILD_SOURCEBRANCH
