@@ -23,7 +23,7 @@ stages:
 - stage: Build
   displayName: Build
   pool:
-    vmImage: windows-latest
+    name: Package ES Standard Build
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.Pager
