@@ -31,10 +31,10 @@ stages:
               Get-ChildItem "$(Build.ArtifactStagingDirectory)/Microsoft.PowerShell.Pager.*.nupkg"
             displayName: 'Copy and Capture NuGet package'
 
-            - task: NuGetCommand@2
-              displayName: 'NuGet push'
-              inputs:
-                command: push
-                packagesToPush: '$(Build.ArtifactStagingDirectory)/Microsoft.PowerShell.Pager.*.nupkg'
-                nuGetFeedType: external
-                publishFeedCredentials: ${{ parameters.feedCredential }}
+          - task: NuGetCommand@2
+            displayName: 'NuGet push'
+            inputs:
+              command: push
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/Microsoft.PowerShell.Pager.*.nupkg'
+              nuGetFeedType: external
+              publishFeedCredentials: ${{ parameters.feedCredential }}
