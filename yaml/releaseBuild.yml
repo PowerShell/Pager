@@ -201,3 +201,15 @@ stages:
       name: Package ES CodeHub Lab E
     steps:
     - template: template/compliance.yml
+
+- template: template/publish.yml
+  parameters:
+    stageName: AzArtifactsFeed
+    environmentName: PSPagerAzFeedApproval
+    feedCredential: AzArtifactFeedPSPagerPush
+
+- template: template/publish.yml
+  parameters:
+    stageName: NuGet
+    environmentName: PSPagerNuGetApproval
+    feedCredential: NugetOrgPush
