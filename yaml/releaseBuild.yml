@@ -1,9 +1,6 @@
 name: PSPager-Release-$(Build.BuildId)
-trigger:
-  branches:
-    include:
-    - master
-    - release*
+trigger: none
+
 pr:
   branches:
     include:
