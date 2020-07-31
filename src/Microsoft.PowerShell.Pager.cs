@@ -127,7 +127,7 @@ namespace Microsoft.PowerShell
                     physicalLinesNeeded = Math.Ceiling( lineLength / physicalWidth);
                 }
 
-                if (physicalLinesAvailable - physicalLinesNeeded <= 0)
+                if (physicalLinesAvailable - physicalLinesNeeded < 0)
                 {
                     break;
                 }
