@@ -1,11 +1,14 @@
 steps:
 - download: current
+  artifact: assembly
+
+- download: current
+  artifact: symbols
 
 - pwsh: |
-    $vstsCommandString = "vso[task.setvariable variable=BUILD_SOURCE]$(Pipeline.Workspace)"
-    Write-Host "sending " + $vstsCommandString
-    Write-Host "##$vstsCommandString"
-  displayName: Extract product artifact
+    $bin = New-Item '$(Pipeline.Workspace)\bin' -ItemType Directory
+    Copy-Item -Path "$(Pipeline.Workspace)\assembly\Microsoft.PowerShell.Pager.dll" -Destination $bin -Verbose
+    Copy-Item -Path "$(Pipeline.Workspace)\symbols\Microsoft.PowerShell.Pager.pdb" -Destination $bin -Verbose
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-antimalware.AntiMalware@3
   displayName: 'Run Defender Scan'
@@ -21,7 +24,7 @@ steps:
   displayName: 'Run BinSkim '
   inputs:
     InputType: Basic
-    AnalyzeTarget: '$(BUILD_SOURCE)\signed\Microsoft.PowerShell.Pager.dll'
+    AnalyzeTarget: '$(Pipeline.Workspace)\bin\Microsoft.PowerShell.Pager.dll'
     AnalyzeSymPath: 'SRV*'
     AnalyzeVerbose: true
     AnalyzeHashes: true
@@ -43,19 +46,19 @@ steps:
   displayName: 'Publish Security Analysis Logs to Build Artifacts'
   continueOnError: true
 
-#- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-#  displayName: 'TSA upload to Codebase: PSThreadJob_201912 Stamp: Azure'
-#  inputs:
-#    tsaStamp: Azure
-#    codeBaseName: PSThreadJob_202004
-#    tsaVersion: TsaV2
-#    uploadFortifySCA: false
-#    uploadFxCop: false
-#    uploadModernCop: false
-#    uploadPREfast: false
-#    uploadRoslyn: false
-#    uploadTSLint: false
-#    uploadAPIScan: false
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
+  displayName: 'TSA upload to Codebase: PSThreadJob_201912 Stamp: Azure'
+  inputs:
+    tsaStamp: Azure
+    codeBaseName: PSPager_202007
+    tsaVersion: TsaV2
+    uploadFortifySCA: false
+    uploadFxCop: false
+    uploadModernCop: false
+    uploadPREfast: false
+    uploadRoslyn: false
+    uploadTSLint: false
+    uploadAPIScan: false
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-report.SdtReport@1
   displayName: 'Create Security Analysis Report'
