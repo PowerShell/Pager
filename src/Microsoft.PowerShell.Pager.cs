@@ -48,7 +48,7 @@ namespace Microsoft.PowerShell
         {
             string[] contentAsArray = content.Split(new string[] {Environment.NewLine}, StringSplitOptions.None);
             int startLine = 0;
-            int bufferHeight = defaultConsole.BufferHeight;
+            int bufferHeight = Math.Min(defaultConsole.BufferHeight, defaultConsole.WindowHeight);
             bool moved = true;
 
             if (!String.IsNullOrEmpty(scrollToRegexPattern))
@@ -113,8 +113,8 @@ namespace Microsoft.PowerShell
         /// <returns>Number of lines not used to write the content.</returns>
         private double WriteContentToConsole(string[] content, int startLine)
         {
-            double physicalLinesAvailable = defaultConsole.BufferHeight - 1;
-            double physicalWidth = defaultConsole.BufferWidth;
+            double physicalLinesAvailable = Math.Min(defaultConsole.BufferHeight, defaultConsole.WindowHeight) - 1;
+            double physicalWidth = Math.Min(defaultConsole.BufferWidth, defaultConsole.WindowWidth);
             double physicalLinesNeeded = 0;
 
             for(int i = startLine; i < content.Length; i++)
