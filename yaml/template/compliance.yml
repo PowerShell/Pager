@@ -47,7 +47,7 @@ steps:
   continueOnError: true
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-uploadtotsa.TSAUpload@1
-  displayName: 'TSA upload to Codebase: PSThreadJob_201912 Stamp: Azure'
+  displayName: 'TSA upload to Codebase: PSPager_202007 Stamp: Azure'
   inputs:
     tsaStamp: Azure
     codeBaseName: PSPager_202007
