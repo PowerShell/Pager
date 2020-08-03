@@ -48,7 +48,7 @@ namespace Microsoft.PowerShell
         {
             string[] contentAsArray = content.Split(new string[] {Environment.NewLine}, StringSplitOptions.None);
             int startLine = 0;
-            int bufferHeight = Math.Min(defaultConsole.WindowHeight, defaultConsole.BufferHeight);
+            int bufferHeight = defaultConsole.BufferHeight;
             bool moved = true;
 
             if (!String.IsNullOrEmpty(scrollToRegexPattern))
@@ -64,31 +64,19 @@ namespace Microsoft.PowerShell
 
             defaultConsole.Write(startAltBuffer);
 
-            do
+            while(true)
             {
                 if (moved) {
 
                     defaultConsole.Clear();
 
-                    int offset = GetMultilineOffset(contentAsArray, startLine, bufferHeight);
+                    var paddingNeeded = WriteContentToConsole(contentAsArray, startLine);
 
-                    var selectedContent = contentAsArray.Skip(startLine).Take(bufferHeight - offset - 1);
-
-                    // add padding so the pager message is always the last line.
-                    int paddingLines = bufferHeight - (selectedContent.Count() + offset + 1);
-
-                    List<string> pad = new List<string>();
-
-                    for (int i = 0; i <= paddingLines; i++)
+                    for (int i = 0; i < paddingNeeded; i++)
                     {
-                        pad.Add(string.Empty);
+                        defaultConsole.WriteLine(string.Empty);
                     }
 
-                    string[] toDisplay = selectedContent.Concat(pad).ToArray();
-
-                    string displayContent = String.Join(Environment.NewLine, toDisplay);
-
-                    defaultConsole.Write(displayContent);
                     defaultConsole.Write(pagerMessage);
                 }
 
@@ -112,37 +100,44 @@ namespace Microsoft.PowerShell
                 else {
                     moved = false;
                 }
-
-            } while (true);
+            }
 
             defaultConsole.Write(endAltBuffer);
         }
 
         /// <summary>
-        /// Get the offset for the numbers of lines when the content line is longer than buffer width.
+        /// Write input to alternate screen buffer and return number of lines that are unused.
         /// </summary>
-        /// <param name="contentAsArray">Content to parse to be larger than buffer width.</param>
-        /// <param name="startLine">Line in the input array to be consider as starting point for parsing"</param>
-        /// <param name="bufferHeight">Height of the buffer</param>
-        private int GetMultilineOffset(string[] contentAsArray, int startLine, int bufferHeight)
+        /// <param name="content">Content to display on alternate screen buffer.</param>
+        /// <param name="scrollToRegexPattern">Index of the starting line to display.</param>
+        /// <returns>Number of lines not used to write the content.</returns>
+        private double WriteContentToConsole(string[] content, int startLine)
         {
-            int contentTotalLines = contentAsArray.Count();
-            int endLine = Math.Min(startLine + bufferHeight, contentTotalLines - 1);
-            int bufferWidth = defaultConsole.BufferWidth;
+            double physicalLinesAvailable = defaultConsole.BufferHeight - 1;
+            double physicalWidth = defaultConsole.BufferWidth;
+            double physicalLinesNeeded = 0;
 
-            int offset = 0;
-
-            for(int i = startLine; i <= endLine; i++)
+            for(int i = startLine; i < content.Length; i++)
             {
-                int lineLength = contentAsArray[i].Length;
-                if (lineLength > bufferWidth)
-                {
-                    double val = Math.Ceiling((double) (lineLength / bufferWidth));
-                    offset += Convert.ToInt32(val);
+                double lineLength = content[i].Length;
+                if (lineLength == 0) {
+                    physicalLinesNeeded = 1;
                 }
+                else {
+                    physicalLinesNeeded = Math.Ceiling( lineLength / physicalWidth);
+                }
+
+                if (physicalLinesAvailable - physicalLinesNeeded < 0)
+                {
+                    break;
+                }
+
+                defaultConsole.WriteLine(content[i]);
+
+                physicalLinesAvailable -= physicalLinesNeeded;
             }
 
-            return offset;
+            return physicalLinesAvailable;
         }
     }
 }
