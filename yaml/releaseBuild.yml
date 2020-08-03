@@ -147,7 +147,7 @@ stages:
       artifact: assembly
       displayName: Publish assembly
 
-    - publish: "$(symbolPath)"
+    - publish: "$(pdbPath)"
       artifact: symbols
       displayName: Publish symbols
 
