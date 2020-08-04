@@ -1,8 +1,8 @@
 # Pager
 
 The `Pager` is a cross platform terminal utility to view content one screen at a time.
-The content are shown on an alternate screen buffer.
-It currently supports scrolling up and down using arrow keys and returning the primary screen buffer using `Q`.
+The content is shown on an alternate screen buffer.
+It currently supports scrolling up and down using arrow keys and returning to the primary screen buffer using `Q`.
 
 The `Pager` is available as a NuGet package `Microsoft.PowerShell.Pager` on [NuGet.org](https://www.nuget.org/packages/Microsoft.PowerShell.Pager/).
 
