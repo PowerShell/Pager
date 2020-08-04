@@ -6,7 +6,7 @@ steps:
   artifact: symbols
 
 - pwsh: |
-    $bin = New-Item '$(Pipeline.Workspace)\bin' -ItemType Directory
+    $bin = New-Item '$(Pipeline.Workspace)\PagerBin' -ItemType Directory -Force
     Copy-Item -Path "$(Pipeline.Workspace)\assembly\Microsoft.PowerShell.Pager.dll" -Destination $bin -Verbose
     Copy-Item -Path "$(Pipeline.Workspace)\symbols\Microsoft.PowerShell.Pager.pdb" -Destination $bin -Verbose
 
@@ -24,7 +24,7 @@ steps:
   displayName: 'Run BinSkim '
   inputs:
     InputType: Basic
-    AnalyzeTarget: '$(Pipeline.Workspace)\bin\Microsoft.PowerShell.Pager.dll'
+    AnalyzeTarget: '$(Pipeline.Workspace)\PagerBin\Microsoft.PowerShell.Pager.dll'
     AnalyzeSymPath: 'SRV*'
     AnalyzeVerbose: true
     AnalyzeHashes: true
