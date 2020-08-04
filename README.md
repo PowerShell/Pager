@@ -8,7 +8,7 @@ The `Pager` is available as a NuGet package `Microsoft.PowerShell.Pager` on [NuG
 
 ## Sample usage
 
-The following demo shows the usage for showing the PowerShell help content on alternate screen and returning to the primary scree,
+The following demo shows the usage for showing the PowerShell help content on alternate screen and returning to the primary screen.
 
 ![Pager-Basic](./assets/Pager-Basic.gif)
 
