@@ -1,8 +1,19 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <Product>PowerShell Pager</Product>
+    <Company>Microsoft Corporation</Company>
+    <Copyright>(c) Microsoft Corporation.</Copyright>
+
     <TargetFramework>netstandard2.0</TargetFramework>
     <IsPackable>true</IsPackable>
+
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <DelaySign>true</DelaySign>
+    <AssemblyOriginatorKeyFile>signing/visualstudiopublic.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <HighEntropyVA>true</HighEntropyVA>
   </PropertyGroup>
 
 </Project>
