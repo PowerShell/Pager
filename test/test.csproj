@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(OS)' == 'Windows_NT'">
-    <TargetFrameworks>netcoreapp5.0;net461</TargetFrameworks>
+    <TargetFrameworks>net5.0;net461</TargetFrameworks>
     <RuntimeIdentifier>win7-x64</RuntimeIdentifier> <!--This is needed for xunit to run net461 tests-->
   </PropertyGroup>
 

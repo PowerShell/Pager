@@ -24,7 +24,7 @@ jobs:
         codeCoverageTool: cobertura
         summaryFileLocation: $(Agent.TempDirectory)/**/coverage.cobertura.xml
 
-  - job: '${{ parameters.jobName }}_netcoreapp31'
+  - job: '${{ parameters.jobName }}_net50'
     pool:
         vmImage: ${{ parameters.vmImageName }}
     displayName: ${{ parameters.jobDisplayName }} - net5.0
