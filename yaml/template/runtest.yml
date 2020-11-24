@@ -10,8 +10,15 @@ jobs:
     displayName: ${{ parameters.jobDisplayName }} - net461
     condition: startsWith('${{ parameters.vmImageName }}', 'win')
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: '5.0.x'
+
     - download: current
-    - task: DotNetCoreCLI@2
+
+     task: DotNetCoreCLI@2
       displayName: Tests on Windows - net461
       inputs:
         command: test
@@ -19,6 +26,7 @@ jobs:
         nobuild: true
         arguments: --runtime net461 --collect:"XPlat Code Coverage"
         testRunTitle: Tests on Windows - net461
+
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: cobertura
@@ -29,7 +37,14 @@ jobs:
         vmImage: ${{ parameters.vmImageName }}
     displayName: ${{ parameters.jobDisplayName }} - net5.0
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use .NET Core sdk'
+      inputs:
+        packageType: sdk
+        version: '5.0.x'
+
     - download: current
+
     - task: DotNetCoreCLI@2
       displayName: Tests on ${{parameters.vmImageName}} - net5.0
       inputs:
@@ -38,6 +53,7 @@ jobs:
         nobuild: true
         arguments: --runtime net5.0 --collect:"XPlat Code Coverage"
         testRunTitle: Tests on ${{parameters.vmImageName}}
+
     - task: PublishCodeCoverageResults@1
       inputs:
         codeCoverageTool: cobertura
