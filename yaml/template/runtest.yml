@@ -18,7 +18,7 @@ jobs:
 
     - download: current
 
-     task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2
       displayName: Tests on Windows - net461
       inputs:
         command: test
