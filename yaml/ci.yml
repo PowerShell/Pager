@@ -32,6 +32,7 @@ stages:
       clean: true
 
     - pwsh: |
+        Get-ChildItem -Recurse '$(Build.SourcesDirectory)'
         ./Pager/build.ps1 -Clean -Configuration 'Release'
       displayName: Build
 
