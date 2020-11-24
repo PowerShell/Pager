@@ -87,7 +87,7 @@ stages:
         $null = New-Item -ItemType Directory -Path $lib461Path -Force
         Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\netstandard2.0\*" -Destination $libPath -Verbose -Exclude '*.pdb'
         Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\net461\*" -Destination $lib461Path -Verbose -Exclude '*.pdb'
-        Copy-Item -Path '$(Build.SourcesDirectory)/Pager/yaml/microsoft.powershell.pager.nuspec' -Destination $packageRootPath -Verbose
+        Copy-Item -Path '$(Build.SourcesDirectory)/yaml/microsoft.powershell.pager.nuspec' -Destination $packageRootPath -Verbose
         Push-Location $packageRootPath
         $version = "$env:VERSION"
         Write-Verbose -Verbose "Creating NuGet package with version $version"
