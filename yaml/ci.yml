@@ -13,8 +13,11 @@ pr:
     - release*
 
 resources:
-  - repo: self
-    clean: true
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
 
 stages:
 - stage: build_and_tet
@@ -25,10 +28,12 @@ stages:
   - job: Build
     displayName: Build
     steps:
+    - checkout: self
+      clean: true
     - pwsh: |
-        ./build.ps1 -Clean -Configuration 'Release'
+        $(Build.SourcesDirectory)/Pager/build.ps1 -Clean -Configuration 'Release'
       displayName: Build
-    - publish: "out/"
+    - publish: "$(Build.SourcesDirectory)/Pager/src/bin/release"
       artifact: out
 
 - stage: Test
@@ -57,4 +62,9 @@ stages:
   pool:
     vmImage: windows-latest
   jobs:
-  - template: template/credscan.yml
+  - job: Compliance_Job
+    steps:
+    - checkout: self
+    - checkout: ComplianceRepo
+    - template: ci-compliance.yml@ComplianceRepo
+
