@@ -32,11 +32,10 @@ stages:
       clean: true
 
     - pwsh: |
-        Get-ChildItem -Recurse '$(Build.SourcesDirectory)'
-        ./Pager/build.ps1 -Clean -Configuration 'Release'
+        ./build.ps1 -Clean -Configuration 'Release'
       displayName: Build
 
-    - publish: "$(Build.SourcesDirectory)/Pager/src/bin/release"
+    - publish: "$(Build.SourcesDirectory)/src/bin/release"
       artifact: out
 
 - stage: Test
