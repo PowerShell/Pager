@@ -64,15 +64,13 @@ stages:
           **\*.dll
         useMinimatch: true
 
-    - pwsh: |
-        Write-Verbose -Verbose "Upload build output"
-        Write-Host "##vso[artifact.upload containerfolder=build;artifactname=build]$(Build.SourcesDirectory)\Pager\src\bin\release"
+    - publish: '$(Build.SourcesDirectory)\Pager\src\bin\release'
+      artifact: build
+      displayName: Publish nuget package
 
-        if (Test-Path '$(Pipeline.Workspace)\signed') {
-          Write-Verbose -Verbose "Upload signed output"
-          Write-Host "##vso[artifact.upload containerfolder=signed;artifactname=signed]$(Pipeline.Workspace)\signed"
-        }
-      displayName: Upload assemblies
+    - publish: '$(Pipeline.Workspace)\signed'
+      artifact: build
+      displayName: Publish nuget package
 
     - pwsh: |
         Copy-Item -Path "$env:BUILD_SOURCESDIRECTORY\Pager\src\bin\release" -Destination "$env:PIPELINE_WORKSPACE\signed" -recurse -verbose -force
