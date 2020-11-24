@@ -71,10 +71,6 @@ stages:
       artifact: build
       displayName: Publish build package
 
-    - publish: '$(Pipeline.Workspace)\signed'
-      artifact: build
-      displayName: Publish nuget package
-
     - pwsh: |
         Copy-Item -Path "$env:BUILD_SOURCESDIRECTORY\src\bin\release" -Destination "$env:PIPELINE_WORKSPACE\signed" -recurse -verbose -force
       displayName: Dummy copy to signed
