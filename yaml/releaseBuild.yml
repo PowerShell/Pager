@@ -8,8 +8,11 @@ pr:
     - release*
 
 variables:
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  POWERSHELL_TELEMETRY_OPTOUT: 1
+  - group: ESRP
+  - name: DOTNET_CLI_TELEMETRY_OPTOUT
+    value: 1
+  - name: POWERSHELL_TELEMETRY_OPTOUT
+    value: 1
 
 resources:
   repositories:
