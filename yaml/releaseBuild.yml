@@ -57,23 +57,23 @@ stages:
 
     - template: EsrpSign.yml@ComplianceRepo
       parameters:
-        buildOutputPath: '$(Build.SourcesDirectory)\Pager\src\bin\release'
+        buildOutputPath: '$(Build.SourcesDirectory)\src\bin\release'
         signOutputPath: '$(Pipeline.Workspace)\signed'
         certificateId: 'CP-230012'
         pattern: |
           **\*.dll
         useMinimatch: true
 
-    - publish: '$(Build.SourcesDirectory)\Pager\src\bin\release'
+    - publish: '$(Build.SourcesDirectory)\src\bin\release'
       artifact: build
-      displayName: Publish nuget package
+      displayName: Publish build package
 
     - publish: '$(Pipeline.Workspace)\signed'
       artifact: build
       displayName: Publish nuget package
 
     - pwsh: |
-        Copy-Item -Path "$env:BUILD_SOURCESDIRECTORY\Pager\src\bin\release" -Destination "$env:PIPELINE_WORKSPACE\signed" -recurse -verbose -force
+        Copy-Item -Path "$env:BUILD_SOURCESDIRECTORY\src\bin\release" -Destination "$env:PIPELINE_WORKSPACE\signed" -recurse -verbose -force
       displayName: Dummy copy to signed
       condition: eq(variables['SkipSigning'], 'True')
 
@@ -130,7 +130,7 @@ stages:
       artifact: nuget
       displayName: Publish nuget package
 
-    - publish: (Build.SourcesDirectory)\Pager\src\obj\project.assets.json'
+    - publish: (Build.SourcesDirectory)\src\obj\project.assets.json'
       artifact: AssetsJson
       displayName: Publish project.assets.json
 
