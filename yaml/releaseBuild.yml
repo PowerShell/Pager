@@ -97,6 +97,7 @@ stages:
             throw 'NuGet package not created.'
         }
         else {
+            $null = New-Item -Path '$(System.ArtifactsDirectory)/nuget' -ItemType Directory
             Copy-Item "./Microsoft.PowerShell.Pager.$version.nupkg" -Destination '$(System.ArtifactsDirectory)/nuget' -Verbose -Force
         }
       displayName: Create NuGet Package
