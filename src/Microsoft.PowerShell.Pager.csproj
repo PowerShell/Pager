@@ -5,7 +5,7 @@
     <Company>Microsoft Corporation</Company>
     <Copyright>(c) Microsoft Corporation.</Copyright>
 
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
     <IsPackable>true</IsPackable>
 
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>

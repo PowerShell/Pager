@@ -55,7 +55,7 @@ namespace Microsoft.PowerShell
             {
                 for(int i = 0; i < contentAsArray.Length; i++)
                 {
-                    if (System.Text.RegularExpressions.Regex.IsMatch(contentAsArray[i], scrollToRegexPattern))
+                    if (System.Text.RegularExpressions.Regex.IsMatch(contentAsArray[i], scrollToRegexPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase))
                     {
                         startLine = i;
                     }

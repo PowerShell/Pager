@@ -8,36 +8,30 @@ pr:
     - release*
 
 variables:
-  DOTNET_CLI_TELEMETRY_OPTOUT: 1
-  POWERSHELL_TELEMETRY_OPTOUT: 1
+  - group: ESRP
+  - name: DOTNET_CLI_TELEMETRY_OPTOUT
+    value: 1
+  - name: POWERSHELL_TELEMETRY_OPTOUT
+    value: 1
 
-# Set AzDevOps Agent to clean the machine after the end of the build
 resources:
-- repo: self
-  clean: true
+  repositories:
+  - repository: ComplianceRepo
+    type: github
+    endpoint: ComplianceGHRepo
+    name: PowerShell/compliance
 
 stages:
 - stage: Build
   displayName: Build
   pool:
-    name: Package ES CodeHub Lab E
+    vmImage: windows-latest
   jobs:
   - job: Build_Job
     displayName: Build Microsoft.PowerShell.Pager
     steps:
-    - task: PkgESSetupBuild@10
-      displayName: 'Initialize build'
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      inputs:
-        useDfs: false
-        productName: PowerShellCore
-        branchVersion: true
-        disableWorkspace: true
-        disableBuildTools: true
-        disableNugetPack: true
-      condition: and(succeeded(), ne(variables['SkipSigning'], 'true'))
-
+    - checkout: self
+      clean: true
     - pwsh: |
         $versionString = if ($env:RELEASE_VERSION -eq 'fromBranch') {
           $branch = $env:BUILD_SOURCEBRANCH
@@ -64,92 +58,23 @@ stages:
         ./build.ps1 -Clean -Configuration 'Release'
       displayName: Execute build
 
-    - pwsh: |
-        $symbolPath = Get-ChildItem -Path "$(Build.SourcesDirectory)\out" -Recurse -Filter 'Microsoft.PowerShell.Pager.pdb'
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        buildOutputPath: '$(Build.SourcesDirectory)\src\bin\release'
+        signOutputPath: '$(Pipeline.Workspace)\signed'
+        certificateId: 'CP-230012'
+        pattern: |
+          **\*.dll
+        useMinimatch: true
 
-      displayName: Upload PDB
-
-    - pwsh: |
-        $signingTemplate = Get-Content -Raw "$(Build.SourcesDirectory)\yaml\signing-template.xml"
-        $signingFile = $signingTemplate -f "Microsoft.PowerShell.Pager.dll", "AuthenticodeFormer"
-        $signingFile | Write-Verbose -Verbose
-        $signXmlPath = "$(System.ArtifactsDirectory)\signing.xml"
-        $signingFile | Out-File -FilePath $signXmlPath -Force
-
-        # Set signing xml path
-        $vstsCommandString = "vso[task.setvariable variable=signXmlPath]${signXmlPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $version = "$env:VERSION"
-        $nugetSigningFile = $signingTemplate -f "Microsoft.PowerShell.Pager.$version.nupkg", "NuGet"
-        $nugetSigningFile | Write-Verbose -Verbose
-        $nugetSignXmlPath = "$(System.ArtifactsDirectory)\nugetSigning.xml"
-        $nugetSigningFile | Out-File -FilePath $nugetSignXmlPath -Force
-
-        # Set nuget signing xml path
-        $vstsCommandString = "vso[task.setvariable variable=nugetSignXmlPath]${nugetSignXmlPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-      displayName: Create signing files
+    - publish: '$(Build.SourcesDirectory)\src\bin\release'
+      artifact: build
+      displayName: Publish build package
 
     - pwsh: |
-        $signSrcPath = "$(Build.SourcesDirectory)\out"
-        # Set signing src path variable
-        $vstsCommandString = "vso[task.setvariable variable=signSrcPath]${signSrcPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $signOutPath = "$(Build.SourcesDirectory)\signed"
-        $null = New-Item -ItemType Directory -Path $signOutPath
-        # Set signing out path variable
-        $vstsCommandString = "vso[task.setvariable variable=signOutPath]${signOutPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $nugetSrcPath = "$(System.ArtifactsDirectory)/nuget"
-        # Set signing src path variable
-        $vstsCommandString = "vso[task.setvariable variable=nugetSrcPath]${nugetSrcPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $nugetOutPath = "$(System.ArtifactsDirectory)\nuget\signed"
-        $null = New-Item -ItemType Directory -Path $nugetOutPath
-        # Set signing out path variable
-        $vstsCommandString = "vso[task.setvariable variable=nugetOutPath]${nugetOutPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-
-        $symbolPath = Get-ChildItem -Path "$(Build.SourcesDirectory)\out" -Recurse -Filter 'Microsoft.PowerShell.Pager.pdb'
-        $vstsCommandString = "vso[task.setvariable variable=pdbPath]${symbolPath}"
-        Write-Host "sending " + $vstsCommandString
-        Write-Host "##$vstsCommandString"
-      displayName: Setup variables for signing
-
-    - task: PkgESCodeSign@10
-      displayName: Sign build files
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      inputs:
-        signConfigXml: '$(signXmlPath)'
-        inPathRoot: '$(signSrcPath)'
-        outPathRoot: '$(signOutPath)'
-        binVersion: Production
-        binVersionOverride: ''
-      condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
-
-    - pwsh: |
-        Copy-Item -Path "$env:SIGNSRCPATH\*.dll" -Destination "$env:SIGNOUTPATH\" -recurse -verbose
+        Copy-Item -Path "$env:BUILD_SOURCESDIRECTORY\src\bin\release" -Destination "$env:PIPELINE_WORKSPACE\signed" -recurse -verbose -force
       displayName: Dummy copy to signed
       condition: eq(variables['SkipSigning'], 'True')
-
-    - publish: "signed/"
-      artifact: assembly
-      displayName: Publish assembly
-
-    - publish: "$(pdbPath)"
-      artifact: symbols
-      displayName: Publish symbols
 
     - task: NuGetToolInstaller@1
       displayName: 'Install NuGet.exe'
@@ -157,8 +82,11 @@ stages:
     - pwsh: |
         $packageRootPath = '$(System.ArtifactsDirectory)/Microsoft.PowerShell.Pager'
         $libPath = "$packageRootPath/lib/netstandard2.0"
+        $lib461Path = "$packageRootPath/lib/net461"
         $null = New-Item -ItemType Directory -Path $libPath -Force
-        Copy-Item -Path "$env:signOutPath\*" -Destination $libPath -Verbose
+        $null = New-Item -ItemType Directory -Path $lib461Path -Force
+        Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\netstandard2.0\*" -Destination $libPath -Verbose -Exclude '*.pdb'
+        Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\net461\*" -Destination $lib461Path -Verbose -Exclude '*.pdb'
         Copy-Item -Path '$(Build.SourcesDirectory)/yaml/microsoft.powershell.pager.nuspec' -Destination $packageRootPath -Verbose
         Push-Location $packageRootPath
         $version = "$env:VERSION"
@@ -169,30 +97,38 @@ stages:
             throw 'NuGet package not created.'
         }
         else {
+            $null = New-Item -Path '$(System.ArtifactsDirectory)/nuget' -ItemType Directory
             Copy-Item "./Microsoft.PowerShell.Pager.$version.nupkg" -Destination '$(System.ArtifactsDirectory)/nuget' -Verbose -Force
         }
       displayName: Create NuGet Package
 
-    - task: PkgESCodeSign@10
-      displayName: Sign nuget package
-      env:
-        SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-      inputs:
-        signConfigXml: '$(nugetSignXmlPath)'
-        inPathRoot: '$(nugetSrcPath)'
-        outPathRoot: '$(nugetOutPath)'
-        binVersion: Production
-        binVersionOverride: ''
-      condition: and(and(succeeded(), eq(variables['Build.Reason'], 'Manual')), ne(variables['SkipSigning'], 'True'))
+    - pwsh: |
+        Get-ChildItem -Path '$(System.ArtifactsDirectory)/nuget' -recurse
+      displayName: Capture nuget package after creation
+
+    - template: EsrpSign.yml@ComplianceRepo
+      parameters:
+        buildOutputPath: '$(System.ArtifactsDirectory)/nuget'
+        signOutputPath: '$(Pipeline.Workspace)/signed-nuget'
+        # this is the cert for NuPkg signing
+        certificateId: "CP-401405"
+        # this is the pattern for NuPkg signing
+        pattern: |
+            **\*.nupkg
+        useMinimatch: true
 
     - pwsh: |
-        Copy-Item -Path "$env:NUGETSRCPATH\*.nupkg" -Destination "$env:NUGETOUTPATH\" -recurse -verbose
+        Copy-Item -Path "$env:SYSTEM_ARTIFACTSDIRECTORY\nuget\*.nupkg" -Destination "$env:PIPELINE_WORKSPACE\signed-nuget" -recurse -verbose -force
       displayName: Dummy nuget copy to signed
       condition: eq(variables['SkipSigning'], 'True')
 
     - pwsh: |
+        Get-ChildItem -Path '$(Pipeline.Workspace)/signed-nuget' -recurse
+      displayName: Capture signed nuget package
+
+    - pwsh: |
         $version = "$env:VERSION"
-        $nugetPkgPath = Get-Item -Path "$env:NUGETOUTPATH/Microsoft.PowerShell.Pager.$version.nupkg"
+        $nugetPkgPath = Get-Item -Path "$env:PIPELINE_WORKSPACE\signed-nuget\Microsoft.PowerShell.Pager.$version.nupkg"
         $vstsCommandString = "vso[task.setvariable variable=nugetPkgPath]${nugetPkgPath}"
         Write-Host "sending " + $vstsCommandString
         Write-Host "##$vstsCommandString"
@@ -202,6 +138,10 @@ stages:
       artifact: nuget
       displayName: Publish nuget package
 
+    - publish: '$(Build.SourcesDirectory)\src\obj\project.assets.json'
+      artifact: AssetsJson
+      displayName: Publish project.assets.json
+
 - stage: compliance
   displayName: Compliance
   dependsOn: Build
@@ -210,7 +150,41 @@ stages:
     pool:
       name: Package ES CodeHub Lab E
     steps:
-    - template: template/compliance.yml
+    - checkout: self
+    - checkout: ComplianceRepo
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download AssetsJson artifacts'
+      inputs:
+        artifact: AssetsJson
+        path: '$(Pipeline.Workspace)/AssetsJson'
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download build artifacts'
+      inputs:
+        artifact: build
+        path: '$(Pipeline.Workspace)/build'
+
+    - pwsh: |
+        Get-ChildItem -Recurse '$(Pipeline.Workspace)'
+      displayName: Capture downloaded artifacts
+
+    - template: assembly-module-compliance.yml@ComplianceRepo
+      parameters:
+        # binskim
+        AnalyzeTarget: '$(Pipeline.Workspace)/build/*.dll'
+        AnalyzeSymPath: 'SRV*'
+        # component-governance
+        sourceScanPath: '$(Pipeline.Workspace)/AssetsJson'
+        # credscan
+        suppressionsFile: ''
+        # TermCheck
+        optionsRulesDBPath: ''
+        optionsFTPath: ''
+        # tsa-upload
+        codeBaseName: 'PSPager_202007'
+        # selections
+        APIScan: false # set to false when not using Windows APIs.
 
 - template: template/publish.yml
   parameters:
