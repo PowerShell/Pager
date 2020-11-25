@@ -101,6 +101,10 @@ stages:
         }
       displayName: Create NuGet Package
 
+    - pwsh: |
+        Get-ChildItem -Path '$(System.ArtifactsDirectory)/nuget' -recurse
+      displayName: Capture nuget package after creation
+
     - template: EsrpSign.yml@ComplianceRepo
       parameters:
         buildOutputPath: '$(System.ArtifactsDirectory)/nuget'
