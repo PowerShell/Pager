@@ -169,6 +169,10 @@ stages:
         artifactName: build
         downloadPath: '$(Pipeline.Workspace)/build'
 
+    - pwsh: |
+        Get-ChildItem -Recurse '$(Pipeline.Workspace)'
+      displayName: Capture downloaded artifacts
+
     - template: assembly-module-compliance.yml@ComplianceRepo
       parameters:
         # binskim
