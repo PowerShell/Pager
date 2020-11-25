@@ -118,6 +118,10 @@ stages:
       condition: eq(variables['SkipSigning'], 'True')
 
     - pwsh: |
+        Get-ChildItem -Path '$(Pipeline.Workspace)/signed-nuget' -recurse
+      displayName: Capture signed nuget package
+
+    - pwsh: |
         $version = "$env:VERSION"
         $nugetPkgPath = Get-Item -Path "$env:PIPELINE_WORKSPACE\signed-nuget\Microsoft.PowerShell.Pager.$version.nupkg"
         $vstsCommandString = "vso[task.setvariable variable=nugetPkgPath]${nugetPkgPath}"
