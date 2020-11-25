@@ -138,7 +138,7 @@ stages:
       artifact: nuget
       displayName: Publish nuget package
 
-    - publish: (Build.SourcesDirectory)\src\obj\project.assets.json'
+    - publish: '$(Build.SourcesDirectory)\src\obj\project.assets.json'
       artifact: AssetsJson
       displayName: Publish project.assets.json
 
