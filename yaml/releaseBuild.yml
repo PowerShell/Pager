@@ -154,14 +154,16 @@ stages:
     - checkout: ComplianceRepo
 
     - task: DownloadPipelineArtifact@2
-      displayName: 'Download artifacts'
+      displayName: 'Download AssetsJson artifacts'
       inputs:
         artifact: AssetsJson
+        path: '$(Pipeline.Workspace)/AssetsJson'
 
     - task: DownloadPipelineArtifact@2
-      displayName: 'Download artifacts'
+      displayName: 'Download build artifacts'
       inputs:
         artifact: build
+        path: '$(Pipeline.Workspace)/build'
 
     - pwsh: |
         Get-ChildItem -Recurse '$(Pipeline.Workspace)'
