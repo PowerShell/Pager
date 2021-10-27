@@ -16,3 +16,7 @@ steps:
 - pwsh: |
     dotnet --info
   displayName: 'Run dotnet info'
+
+- pwsh: |
+    dotnet --list-sdks | select-string -Pattern '\d.\d.\d*|-\w*\.\d*' | ForEach-Object { $_.matches.value } | Sort-Object -Descending | Select-Object -First 1
+  displayName: 'Run dotnet info'
