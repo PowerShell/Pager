@@ -22,11 +22,18 @@ steps:
   displayName: 'Run dotnet list'
 
 - pwsh: |
-      if (Test-Path -Path $HOME/.dotnet) {
-          Remove-Item $HOME/.dotnet -Recurse -Force
-      }
+    if (Test-Path -Path $HOME/.dotnet) {
+        Remove-Item $HOME/.dotnet -Recurse -Force
+    }
   displayName: Remove Old .NET SDKs
   condition: succeededOrFailed()
+
+- pwsh: |
+    Get-Command -Name 'dotnet'
+    ls -l /usr/local/bin/dotnet
+
+    sudo chmod a+x /usr/local/bin/dotnet
+  displayName: ls -l
 
 - pwsh: |
     dotnet --list-sdks | select-string -Pattern '\d.\d.\d*|-\w*\.\d*' | ForEach-Object { $_.matches.value } | Sort-Object -Descending | Select-Object -First 1
