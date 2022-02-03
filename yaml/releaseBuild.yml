@@ -76,6 +76,14 @@ stages:
       displayName: Dummy copy to signed
       condition: eq(variables['SkipSigning'], 'True')
 
+    - ${{ if ne(variables['SkipSigning'], 'True') }}:
+      - template: Sbom.yml@ComplianceRepo
+        parameters:
+          BuildDropPath: '$(Pipeline.Workspace)\signed'
+          Build_Repository_Uri: https://github.com/PowerShell/Pager
+          PackageName: Microsoft.PowerShell.Pager
+          PackageVersion: $(Version)
+
     - task: NuGetToolInstaller@1
       displayName: 'Install NuGet.exe'
 
@@ -83,11 +91,14 @@ stages:
         $packageRootPath = '$(System.ArtifactsDirectory)/Microsoft.PowerShell.Pager'
         $libPath = "$packageRootPath/lib/netstandard2.0"
         $lib461Path = "$packageRootPath/lib/net461"
+        $sbomRoot = "$packageRootPath/_manifest"
         $null = New-Item -ItemType Directory -Path $libPath -Force
         $null = New-Item -ItemType Directory -Path $lib461Path -Force
+        $null = New-Item -ItemType Directory -Path $sbomRoot -Force
         Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\netstandard2.0\*" -Destination $libPath -Verbose -Exclude '*.pdb'
         Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\net461\*" -Destination $lib461Path -Verbose -Exclude '*.pdb'
         Copy-Item -Path '$(Build.SourcesDirectory)/yaml/microsoft.powershell.pager.nuspec' -Destination $packageRootPath -Verbose
+        Copy-Item -Path "$env:PIPELINE_WORKSPACE\signed\_manifest\*" -Destination $sbomRoot -Verbose -Recurse
         Push-Location $packageRootPath
         $version = "$env:VERSION"
         Write-Verbose -Verbose "Creating NuGet package with version $version"
