@@ -18,6 +18,7 @@ namespace Microsoft.PowerShell
         private static readonly string endAltBuffer = $"{vt100Escape}[?1049l";
         private static readonly string reverseColorStart = $"{vt100Escape}[7m";
         private static readonly string reverseColorEnd = $"{vt100Escape}[0m";
+        private static readonly string eraseScreenBuffer = $"{vt100Escape}[2J";
 
         private static readonly string pagerMessage = $"{reverseColorStart}Up:{reverseColorEnd}↑ {reverseColorStart}Down:{reverseColorEnd}↓ {reverseColorStart}Quit:{reverseColorEnd}Q :";
 
@@ -68,7 +69,7 @@ namespace Microsoft.PowerShell
             {
                 if (moved) {
 
-                    defaultConsole.Clear();
+                    defaultConsole.Write(eraseScreenBuffer);
 
                     var paddingNeeded = WriteContentToConsole(contentAsArray, startLine);
 
@@ -124,7 +125,7 @@ namespace Microsoft.PowerShell
                     physicalLinesNeeded = 1;
                 }
                 else {
-                    physicalLinesNeeded = Math.Ceiling( lineLength / physicalWidth);
+                    physicalLinesNeeded = Math.Ceiling(lineLength / physicalWidth);
                 }
 
                 if (physicalLinesAvailable - physicalLinesNeeded < 0)
