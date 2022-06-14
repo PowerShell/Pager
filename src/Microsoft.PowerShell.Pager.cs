@@ -18,8 +18,17 @@ namespace Microsoft.PowerShell
         private static readonly string endAltBuffer = $"{vt100Escape}[?1049l";
         private static readonly string reverseColorStart = $"{vt100Escape}[7m";
         private static readonly string reverseColorEnd = $"{vt100Escape}[0m";
+        private static readonly string eraseScreenBuffer = $"{vt100Escape}[2J";
+        private static readonly string repositionCursor = $"{vt100Escape}[1;1H";
 
-        private static readonly string pagerMessage = $"{reverseColorStart}Up:{reverseColorEnd}↑ {reverseColorStart}Down:{reverseColorEnd}↓ {reverseColorStart}Quit:{reverseColorEnd}Q :";
+        private static readonly string pagerMessage = 
+            $"{reverseColorStart}Up:{reverseColorEnd}↑ " + 
+            $"{reverseColorStart}Down:{reverseColorEnd}↓ " +
+            $"{reverseColorStart}Page Up:{reverseColorEnd}↟ " +
+            $"{reverseColorStart}Page Down:{reverseColorEnd}↡ " +
+            $"{reverseColorStart}Home:{reverseColorEnd}↥ " +
+            $"{reverseColorStart}End:{reverseColorEnd}↧ " +
+            $"{reverseColorStart}Quit:{reverseColorEnd}Q :";
 
         private static IConsole defaultConsole;
 
@@ -67,8 +76,8 @@ namespace Microsoft.PowerShell
             while(true)
             {
                 if (moved) {
-
-                    defaultConsole.Clear();
+                    defaultConsole.Write(eraseScreenBuffer);
+                    defaultConsole.Write(repositionCursor);
 
                     var paddingNeeded = WriteContentToConsole(contentAsArray, startLine);
 
@@ -85,12 +94,46 @@ namespace Microsoft.PowerShell
                 if (pressed.Key == ConsoleKey.UpArrow) {
                     if (startLine > 0) {
                         startLine--;
+                        if (startLine < 0) startLine = 0;
                         moved = true;
                     }
                 }
                 else if (pressed.Key == ConsoleKey.DownArrow) {
                     if ((bufferHeight - 1) < contentAsArray.Count()) {
                         startLine++;
+                        if (startLine >= contentAsArray.Count() - bufferHeight)
+                            startLine = contentAsArray.Count() - bufferHeight;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.PageUp) {
+                    if (startLine > 0) {
+                        startLine -= bufferHeight;
+                        if (startLine < 0) startLine = 0;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.PageDown) {
+                    if ((bufferHeight - 1) < contentAsArray.Count()) {
+                        startLine += bufferHeight;
+                        if (startLine >= contentAsArray.Count())
+                            startLine = contentAsArray.Count() - bufferHeight;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.Home)
+                {
+                    if (startLine > 0)
+                    {
+                        startLine = 0;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.End)
+                {
+                    if ((bufferHeight - 1) < contentAsArray.Count())
+                    {
+                        startLine = contentAsArray.Count() - bufferHeight;
                         moved = true;
                     }
                 }
@@ -124,7 +167,7 @@ namespace Microsoft.PowerShell
                     physicalLinesNeeded = 1;
                 }
                 else {
-                    physicalLinesNeeded = Math.Ceiling( lineLength / physicalWidth);
+                    physicalLinesNeeded = Math.Ceiling(lineLength / physicalWidth);
                 }
 
                 if (physicalLinesAvailable - physicalLinesNeeded < 0)
