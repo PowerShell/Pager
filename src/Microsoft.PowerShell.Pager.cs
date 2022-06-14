@@ -24,6 +24,10 @@ namespace Microsoft.PowerShell
         private static readonly string pagerMessage = 
             $"{reverseColorStart}Up:{reverseColorEnd}↑ " + 
             $"{reverseColorStart}Down:{reverseColorEnd}↓ " +
+            $"{reverseColorStart}Page Up:{reverseColorEnd}↟ " +
+            $"{reverseColorStart}Page Down:{reverseColorEnd}↡ " +
+            $"{reverseColorStart}Home:{reverseColorEnd}↥ " +
+            $"{reverseColorStart}End:{reverseColorEnd}↧ " +
             $"{reverseColorStart}Quit:{reverseColorEnd}Q :";
 
         private static IConsole defaultConsole;
@@ -90,12 +94,46 @@ namespace Microsoft.PowerShell
                 if (pressed.Key == ConsoleKey.UpArrow) {
                     if (startLine > 0) {
                         startLine--;
+                        if (startLine < 0) startLine = 0;
                         moved = true;
                     }
                 }
                 else if (pressed.Key == ConsoleKey.DownArrow) {
                     if ((bufferHeight - 1) < contentAsArray.Count()) {
                         startLine++;
+                        if (startLine >= contentAsArray.Count() - bufferHeight)
+                            startLine = contentAsArray.Count() - bufferHeight;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.PageUp) {
+                    if (startLine > 0) {
+                        startLine -= bufferHeight;
+                        if (startLine < 0) startLine = 0;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.PageDown) {
+                    if ((bufferHeight - 1) < contentAsArray.Count()) {
+                        startLine += bufferHeight;
+                        if (startLine >= contentAsArray.Count())
+                            startLine = contentAsArray.Count() - bufferHeight;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.Home)
+                {
+                    if (startLine > 0)
+                    {
+                        startLine = 0;
+                        moved = true;
+                    }
+                }
+                else if (pressed.Key == ConsoleKey.End)
+                {
+                    if ((bufferHeight - 1) < contentAsArray.Count())
+                    {
+                        startLine = contentAsArray.Count() - bufferHeight;
                         moved = true;
                     }
                 }
