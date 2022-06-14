@@ -19,8 +19,12 @@ namespace Microsoft.PowerShell
         private static readonly string reverseColorStart = $"{vt100Escape}[7m";
         private static readonly string reverseColorEnd = $"{vt100Escape}[0m";
         private static readonly string eraseScreenBuffer = $"{vt100Escape}[2J";
+        private static readonly string repositionCursor = $"{vt100Escape}[1;1H";
 
-        private static readonly string pagerMessage = $"{reverseColorStart}Up:{reverseColorEnd}↑ {reverseColorStart}Down:{reverseColorEnd}↓ {reverseColorStart}Quit:{reverseColorEnd}Q :";
+        private static readonly string pagerMessage = 
+            $"{reverseColorStart}Up:{reverseColorEnd}↑ " + 
+            $"{reverseColorStart}Down:{reverseColorEnd}↓ " +
+            $"{reverseColorStart}Quit:{reverseColorEnd}Q :";
 
         private static IConsole defaultConsole;
 
@@ -68,8 +72,8 @@ namespace Microsoft.PowerShell
             while(true)
             {
                 if (moved) {
-
                     defaultConsole.Write(eraseScreenBuffer);
+                    defaultConsole.Write(repositionCursor);
 
                     var paddingNeeded = WriteContentToConsole(contentAsArray, startLine);
 
